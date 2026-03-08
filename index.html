@@ -419,33 +419,21 @@
       align-items: stretch !important;
       gap: 10px !important;
     }
-    #page-2 .card-row {
-      flex-direction: row !important;
-      align-items: stretch !important;
-      flex-wrap: nowrap !important;
-      justify-content: center !important;
-    }
+
     .card {
       width: 100% !important;
       min-width: 0 !important;
       height: auto !important;
       overflow: visible !important;
     }
-    #page-2 .card {
-      width: auto !important;
-    }
+
 
     .hub-row {
       flex-direction: column !important;
       align-items: center !important;
       gap: 12px !important;
     }
-    #page-2 .hub-row {
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
-      justify-content: center !important;
-      align-items: stretch !important;
-    }
+
     .hub-row .card-sm {
       width: 100% !important;
       min-width: 0 !important;
@@ -503,21 +491,88 @@
     }
     .impact-banner p { font-size: 13px !important; }
 
-    /* === PAGE 2: Keep horizontal card layouts, scale to fit mobile === */
-    #page-2 .page-wide {
-      transform: scale(0.52);
-      transform-origin: top center;
-      width: 192% !important;
-      margin-left: -46% !important;
+    /* === PAGE 2: Pyramid layout on mobile === */
+    #page-2 .flow-connector { display: none !important; }
+    #page-2-pyramid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 0 4px;
     }
-    #page-2 {
-      padding-top: 16px !important;
-      padding-bottom: 0 !important;
-      overflow: hidden !important;
+    #page-2-pyramid .pyramid-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
     }
-    /* Pull next page up to compensate for the empty space from scaling */
-    #page-2 + .page-slide {
-      margin-top: -42vh;
+    #page-2-pyramid .pyramid-row .card,
+    #page-2-pyramid .pyramid-row .card-sm {
+      width: auto !important;
+      min-width: 0 !important;
+      flex: 1 1 0 !important;
+      max-width: 200px;
+      height: auto !important;
+      overflow: visible !important;
+      padding: 10px 8px !important;
+      font-size: 11px !important;
+    }
+    #page-2-pyramid .pyramid-row .card h3,
+    #page-2-pyramid .pyramid-row .card-sm h3 {
+      font-size: 11px !important;
+      margin: 4px 0 2px !important;
+    }
+    #page-2-pyramid .pyramid-row .card p,
+    #page-2-pyramid .pyramid-row .card-sm p {
+      font-size: 9px !important;
+      line-height: 1.2 !important;
+      margin: 0 !important;
+    }
+    #page-2-pyramid .pyramid-row .icon-wrap {
+      width: 28px !important;
+      height: 28px !important;
+      padding: 4px !important;
+    }
+    #page-2-pyramid .pyramid-row .card-tag {
+      font-size: 8px !important;
+      padding: 1px 5px !important;
+    }
+    #page-2-pyramid .pyramid-row .metric-chip {
+      font-size: 8px !important;
+      padding: 1px 4px !important;
+    }
+    #page-2-pyramid .pyramid-hub-row {
+      display: flex;
+      justify-content: center;
+    }
+    #page-2-pyramid .pyramid-hub-row .hub {
+      width: 80px !important;
+      height: 80px !important;
+      margin: 0 !important;
+    }
+    #page-2-pyramid .pyramid-hub-row .hub-title { font-size: 9px !important; }
+    #page-2-pyramid .pyramid-hub-row .hub-sub { font-size: 8px !important; }
+    #page-2-pyramid .pyramid-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #de8130;
+      text-align: center;
+      letter-spacing: 0.5px;
+      margin: 4px 0;
+    }
+    /* 3-card bottom row needs smaller cards */
+    #page-2-pyramid .pyramid-row-3 .card,
+    #page-2-pyramid .pyramid-row-3 .card-sm {
+      max-width: 140px !important;
+      padding: 8px 6px !important;
+    }
+    #page-2-pyramid .pyramid-row-3 .card h3,
+    #page-2-pyramid .pyramid-row-3 .card-sm h3 {
+      font-size: 10px !important;
+    }
+    #page-2-pyramid .pyramid-row-3 .card p,
+    #page-2-pyramid .pyramid-row-3 .card-sm p {
+      font-size: 8px !important;
     }
   }
 
@@ -527,15 +582,7 @@
     .kpi-card { flex: 1 1 100% !important; }
     div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr !important; }
     #p7WheelWrap, #p7WheelCanvas { width: 240px !important; height: 240px !important; }
-    /* Page 2 needs slightly more scaling down on small phones */
-    #page-2 .page-wide {
-      transform: scale(0.45);
-      width: 222% !important;
-      margin-left: -61% !important;
-    }
-    #page-2 + .page-slide {
-      margin-top: -48vh;
-    }
+
   }
 
 </style>
@@ -1032,6 +1079,117 @@ function setupMobile() {
   document.querySelectorAll('[style*="min-height:100vh"]').forEach(function(el) {
     el.style.minHeight = 'auto';
   });
+
+  // === Page 2: Restructure into pyramid layout on mobile ===
+  var page2 = document.getElementById('page-2');
+  if (page2) {
+    var pageWide = page2.querySelector('.page-wide');
+    // Get all reveal-section zoomable divs (skip title bar)
+    var sections = pageWide.querySelectorAll('.reveal-section.zoomable');
+
+    // sections[0] = flow diagram (Primary Care Visit -> Cercanos -> Next PCP Visit)
+    // sections[1] = card-row with 3 cards: Structured Monitoring, Timely Escalation, Patient Engagement
+    // sections[2] = flow connector "Cercanos Care Team"
+    // sections[3] = hub-row with 6 items
+    // sections[4] = card-row with 2 support cards
+
+    if (sections.length >= 5) {
+      // Hide original sections (except flow diagram which we keep simplified)
+      // Actually hide the flow diagram on mobile - too wide
+      sections[0].style.display = 'none';
+      sections[1].style.display = 'none';
+      sections[2].style.display = 'none';
+      sections[3].style.display = 'none';
+      sections[4].style.display = 'none';
+
+      // Get references to cards from sections[1]
+      var cardRow1 = sections[1].querySelector('.card-row');
+      var cards1 = cardRow1 ? cardRow1.children : [];
+      // cards1[0] = Structured Monitoring, cards1[1] = Timely Escalation, cards1[2] = Patient Engagement
+
+      // Get references from hub-row sections[3]
+      var hubRow = sections[3].querySelector('.hub-row');
+      var hubItems = hubRow ? hubRow.children : [];
+      // hubItems[0] = Collaborative Specialists, hubItems[1] = Clinical Provider
+      // hubItems[2] = Care Coach, hubItems[3] = Cercanos Hub
+      // hubItems[4] = Nutritional Coach, hubItems[5] = Mental Health Coach
+
+      // Get references from support card-row sections[4]
+      var cardRow2 = sections[4].querySelector('.card-row');
+      var cards2 = cardRow2 ? cardRow2.children : [];
+      // cards2[0] = Community Coach, cards2[1] = Medication Adherence Coach
+
+      // Clone all needed elements
+      var patientEngagement = cards1[2] ? cards1[2].cloneNode(true) : null;
+      var structuredMonitoring = cards1[0] ? cards1[0].cloneNode(true) : null;
+      var timelyEscalation = cards1[1] ? cards1[1].cloneNode(true) : null;
+      var collabSpecialists = hubItems[0] ? hubItems[0].cloneNode(true) : null;
+      var clinicalProvider = hubItems[1] ? hubItems[1].cloneNode(true) : null;
+      var cercHub = hubItems[3] ? hubItems[3].cloneNode(true) : null;
+      var careCoach = hubItems[2] ? hubItems[2].cloneNode(true) : null;
+      var nutritionalCoach = hubItems[4] ? hubItems[4].cloneNode(true) : null;
+      var communityCoach = cards2[0] ? cards2[0].cloneNode(true) : null;
+      var medAdherenceCoach = cards2[1] ? cards2[1].cloneNode(true) : null;
+      var mentalHealthCoach = hubItems[5] ? hubItems[5].cloneNode(true) : null;
+
+      // Build pyramid container
+      var pyramid = document.createElement('div');
+      pyramid.id = 'page-2-pyramid';
+
+      // Row 1: Patient Engagement (1 card)
+      var row1 = document.createElement('div');
+      row1.className = 'pyramid-row';
+      if (patientEngagement) row1.appendChild(patientEngagement);
+      pyramid.appendChild(row1);
+
+      // Row 2: Structured Monitoring + Timely Escalation (2 cards)
+      var row2 = document.createElement('div');
+      row2.className = 'pyramid-row';
+      if (structuredMonitoring) row2.appendChild(structuredMonitoring);
+      if (timelyEscalation) row2.appendChild(timelyEscalation);
+      pyramid.appendChild(row2);
+
+      // Label: Cercanos Care Team
+      var label = document.createElement('div');
+      label.className = 'pyramid-label';
+      label.textContent = 'Cercanos Care Team';
+      pyramid.appendChild(label);
+
+      // Row 3: Collaborative Specialists + Clinical Provider (2 cards)
+      var row3 = document.createElement('div');
+      row3.className = 'pyramid-row';
+      if (collabSpecialists) row3.appendChild(collabSpecialists);
+      if (clinicalProvider) row3.appendChild(clinicalProvider);
+      pyramid.appendChild(row3);
+
+      // Row 4: Cercanos Heart hub (centered)
+      var row4 = document.createElement('div');
+      row4.className = 'pyramid-hub-row';
+      if (cercHub) row4.appendChild(cercHub);
+      pyramid.appendChild(row4);
+
+      // Row 5: Care Coach + Nutritional Coach (2 cards)
+      var row5 = document.createElement('div');
+      row5.className = 'pyramid-row';
+      if (careCoach) row5.appendChild(careCoach);
+      if (nutritionalCoach) row5.appendChild(nutritionalCoach);
+      pyramid.appendChild(row5);
+
+      // Row 6: Community Coach + Medication Adherence Coach + Mental Health Coach (3 cards)
+      var row6 = document.createElement('div');
+      row6.className = 'pyramid-row pyramid-row-3';
+      if (communityCoach) row6.appendChild(communityCoach);
+      if (medAdherenceCoach) row6.appendChild(medAdherenceCoach);
+      if (mentalHealthCoach) row6.appendChild(mentalHealthCoach);
+      pyramid.appendChild(row6);
+
+      // Insert pyramid after the title bar
+      var titleBar = pageWide.querySelector('.slide-title-bar');
+      if (titleBar) {
+        titleBar.parentNode.insertBefore(pyramid, titleBar.nextSibling);
+      }
+    }
+  }
 }
 
 if (checkMobile()) {
